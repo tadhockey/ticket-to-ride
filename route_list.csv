@@ -1,17 +1,79 @@
 City1,City2,Distance,Color 1,Color 2
-Vancouver,Seattle,1,Gray,Gray
-Vancouver,Calgary,3,Gray,None
-Seattle,Calgary,4,Gray,None
-Seattle,Portland,1,Gray,Gray
+Vancouver,Seattle,1,Colorless,Colorless
+Vancouver,Calgary,3,Colorless,None
+Seattle,Calgary,4,Colorless,None
+Seattle,Portland,1,Colorless,Colorless
 Seattle,Helena,6,Yellow,None
 Portland,Salt Lake City,6,Blue,None
 Portland,San Francisco,5,Green,Pink
 San Francisco,Salt Lake City,5,Orange,White
 San Francisco,Los Angeles,3,Yellow,Pink
-Los Angeles,Las Vegas,2,Gray,None
-Los Angeles,Phoenix,3,Gray,None
+Los Angeles,Las Vegas,2,Colorless,None
+Los Angeles,Phoenix,3,Colorless,None
 Los Angeles,El Paso,6,Black,None
 Las Vegas,Salt Lake City,3,Orange,None
 Phoenix,Denver,5,White,None
-Phoenix,El Paso,3,Gray,None
-Phoenix,Santa Fe,3,Gray,None
+Phoenix,El Paso,3,Colorless,None
+Phoenix,Santa Fe,3,Colorless,None
+Salt Lake City,Denver,3,Red,Yellow
+Salt Lake City,Helena,3,Pink,None
+Calgary,Helena,4,Colorless,None
+Calgary,Winnipeg,6,White,None
+Helena,Winnipeg,4,Blue,None
+Helena,Denver,4,Green,None
+Helena,Omaha,5,Red,None
+Helena,Duluth,6,Orange,None
+El Paso,Santa Fe,2,Colorless,None
+El Paso,Dallas,4,Red,None
+El Paso,Houston,6,Green,None
+El Paso,Oklahoma City,5,Yellow,None
+Santa Fe,Oklahoma City,3,Blue,None
+Santa Fe,Denver,2,Colorless,None
+Denver,Oklahoma City,4,Red,None
+Denver,Omaha,4,Pink,None
+Denver,Kansas City,4,Orange,Black
+Winnipeg,Duluth,4,Black,None
+Winnipeg,Sault St. Marie,6,Colorless,None
+Oklahoma City,Kansas City,2,Colorless,Colorless
+Oklahoma City,Little Rock,2,Colorless,None
+Oklahoma City,Dallas,2,Colorless,Colorless
+Dallas,Little Rock,2,Colorless,None
+Dallas,Houston,1,Colorless,Colorless
+Houston,New Orleans,2,Colorless,None
+Omaha,Kansas City,1,Colorless,Colorless
+Omaha,Duluth,2,Colorless,Colorless
+Omaha,Chicago,4,Blue,None
+Kansas City,Saint Louis,2,Blue,Pink
+Little Rock,New Orleans,3,Green,None
+Little Rock,Nashville,3,White,None
+Little Rock,Saint Louis,2,Colorless,None
+Saint Louis,Nashville,2,Colorless,None
+Saint Louis,Chicago,2,Green,White
+Saint Louis,Pittsburgh,5,Green,None
+New Orleans,Atlanta,4,Orange,Yellow
+New Orleans,Miami,6,Red,None
+Chicago,Pittsburgh,3,Black,Orange
+Chicago,Toronto,4,White,None
+Nashville,Atlanta,1,Colorless,None
+Nashville,Pittsburgh,4,Yellow,None
+Nashville,Raleigh,3,Black,None
+Sault St. Marie,Toronto,2,Colorless,None
+Sault St. Marie,Duluth,3,Colorless,None
+Sault St. Marie,Montreal,5,Black,None
+Duluth,Toronto,6,Pink,None
+Duluth,Chicago,3,Red,None
+Atlanta,Miami,5,Blue,None
+Atlanta,Raleigh,2,Colorless,Colorless
+Atlanta,Charleston,2,Colorless,None
+Charleston,Miami,4,Pink,None
+Charleston,Raleigh,2,Colorless,None
+Raleigh,Pittsburgh,2,Colorless,None
+Raleigh,Washington,2,Colorless,Colorless
+Washington,Pittsburgh,2,Colorless,None
+Washington,New York,2,Orange,Black
+Pittsburgh,Toronto,2,Colorless,None
+Pittsburgh,New York,2,White,Green
+Toronto,Montreal,3,Colorless,None
+New York,Boston,2,Red,Yellow
+New York,Montreal,3,Blue,None
+Montreal,Boston,2,Colorless,Colorless
