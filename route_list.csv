@@ -1,0 +1,17 @@
+City1,City2,Distance,Color 1,Color 2
+Vancouver,Seattle,1,Gray,Gray
+Vancouver,Calgary,3,Gray,None
+Seattle,Calgary,4,Gray,None
+Seattle,Portland,1,Gray,Gray
+Seattle,Helena,6,Yellow,None
+Portland,Salt Lake City,6,Blue,None
+Portland,San Francisco,5,Green,Pink
+San Francisco,Salt Lake City,5,Orange,White
+San Francisco,Los Angeles,3,Yellow,Pink
+Los Angeles,Las Vegas,2,Gray,None
+Los Angeles,Phoenix,3,Gray,None
+Los Angeles,El Paso,6,Black,None
+Las Vegas,Salt Lake City,3,Orange,None
+Phoenix,Denver,5,White,None
+Phoenix,El Paso,3,Gray,None
+Phoenix,Santa Fe,3,Gray,None
