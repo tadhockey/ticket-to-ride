@@ -17,17 +17,21 @@ G.add_weighted_edges_from(routes_list)
 #nx.draw_networkx(G)
 
 # Generate deck of 30 destination cards
-# while len(deck structure) < 30:
-end_cities = random.sample(city_list, 2)
-path = shortest_path(G, end_cities[0], end_cities[1])
-path_cost = path_weight(G, path, "weight")
-
-    # Remove invalid routes
-    # if invalid:
-    #     continue
-    # else:
-    #     save to deck strucure
-
+deck = []
+deck_size = 30
+while len(deck) < deck_size:
+    end_cities = random.sample(city_list, 2)
+    path = shortest_path(G, end_cities[0], end_cities[1])
+    while len(path) < 3: # check for intermediate city, redraw if necessary
+        end_cities = random.sample(city_list, 2)
+        path = shortest_path(G, end_cities[0], end_cities[1])
+    path_cost = path_weight(G, path, "weight")
+    title = end_cities[0] + '-' + end_cities[1]
+    title_rev = end_cities[1] + '-' + end_cities[0]
+    card = (title, path_cost)
+    if not(card in deck or (title_rev, path_cost) in deck): #check for duplicates
+        deck.append(card)
+print(deck)
 
 # Distribute routes (need some sort of front end framework?)
 player_count = input("How many players?")
