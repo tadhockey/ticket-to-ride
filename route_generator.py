@@ -1,82 +1,96 @@
 import networkx as nx
 import pandas as pd
-import matplotlib.pyplot as plt
 import random
-from tkinter import *
-from tkinter import ttk
+import tkinter as tk
 
 from networkx.classes.function import path_weight
 from networkx.algorithms.shortest_paths.generic import shortest_path
+from tkinter import ttk
 
-def generate_deck():
-    # Read in and format route data
-    routes_df = pd.read_csv("route_list.csv")
-    city_list = list(routes_df.City1)
+
+def generate_route_graph(route_csv):
+    """Generates a graph network given a csv of city data"""
+    routes_df = pd.read_csv(route_csv)
     routes_list = list(zip(list(routes_df.City1), list(routes_df.City2), list(routes_df.Distance)))
 
-    # Create route graph
     G = nx.Graph()
     G.add_weighted_edges_from(routes_list)
-    #nx.draw_networkx(G)
 
-    # Generate deck of 30 destination cards
+    return G
+
+def generate_deck(G, deck_size=30):
+    """Generates a deck of valid routes from the pool of cities."""
+    city_list = list(G.nodes)
     deck = []
-    deck_size = 30
+    
     while len(deck) < deck_size:
-        end_cities = random.sample(city_list, 2)
-        path = shortest_path(G, end_cities[0], end_cities[1])
-        while len(path) < 3: # check for intermediate city, redraw if necessary
+        path = []
+        while len(path) < 3:
             end_cities = random.sample(city_list, 2)
             path = shortest_path(G, end_cities[0], end_cities[1])
         path_cost = path_weight(G, path, "weight")
-        title = end_cities[0] + '-' + end_cities[1]
-        title_rev = end_cities[1] + '-' + end_cities[0]
-        card = (title, path_cost)
-        if not(card in deck or (title_rev, path_cost) in deck): #check for duplicates
-            deck.append(card)
-    #print(deck)
 
+        route_title = end_cities[0] + '-' + end_cities[1]
+        card = (route_title, path_cost)
+
+        route_title_rev = end_cities[1] + '-' + end_cities[0]
+        rev_card = (route_title_rev, path_cost)
+
+        if (card not in deck) and (rev_card not in deck):
+            deck.append(card)
+        
     return deck
 
-def generate_game(num_players=2):
-    cards = dict()
+def generate_game(G, num_players=2):
+    """Generates an empty game state for a new game"""
+    deck = generate_deck(G)
+    player_cards = {"deck": deck}
+
     for x in range(num_players):
-        cards[x] = []
-    deck = generate_deck()
-    cards['deck'] = deck
-    print(cards['deck'])
-    game_state = (cards, deck)
-    return game_state
+        player_cards[x] = []
+
+    return (player_cards, deck)
+    
+
+def create_game_window(G):
+    """Creates a window interface to play the game in"""
+    root = tk.Tk()
+    root.title("Ticket to Ride: Ultimate Edition")
+    mainframe = ttk.Frame(root, padding="6 6 12 12")
+    mainframe.grid(column=0, row=0, sticky='nsew')
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+
+    ttk.Label(mainframe, text='Create a New Game').grid(column=1, row=1, sticky='w')
+    ttk.Label(mainframe, text='How many players are playing Ticket to Ride?').grid(column=1, row=2, sticky='n')
+    players = tk.IntVar()
+    ttk.Radiobutton(mainframe, text='Two', variable=players, value=2).grid(column=1, row=3, sticky='w')
+    ttk.Radiobutton(mainframe, text='Three', variable=players, value=3).grid(column=1, row=4, sticky='w')
+    ttk.Radiobutton(mainframe, text='Four', variable=players, value=4).grid(column=1, row=5, sticky='w')
+    ttk.Radiobutton(mainframe, text='Five', variable=players, value=5).grid(column=1, row=6, sticky='w')
+    ttk.Button(mainframe, text='Ready!', command=lambda : generate_game(G, players.get())).grid(column=2, row=7, sticky='n')
+    ttk.Button(mainframe, text='Cancel Game', command=exit).grid(column=2, row=8, sticky='n')
+
+    return root
+
 
 def deal_to_player(player, game_state, initial_deal=True):
     pass
 
+
 def end_of_game():
     pass
 
-def main():
-    root = Tk()
-    root.title("Game Window")
-    mainframe = ttk.Frame(root, padding="6 6 12 12")
-    mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-    root.columnconfigure(0, weight=1)
-    root.rowconfigure(0, weight=1)
 
-    ttk.Label(mainframe, text='Hello!').grid(column=1, row=1, sticky=W)
-    ttk.Label(mainframe, text='How many players are playing Ticket to Ride?').grid(column=1, row=2, sticky=N)
-    players = IntVar()
-    two = ttk.Radiobutton(mainframe, text='Two', variable=players, value=2).grid(column=1, row=3, sticky=W)
-    three = ttk.Radiobutton(mainframe, text='Three', variable=players, value=3).grid(column=1, row=4, sticky=W)
-    four = ttk.Radiobutton(mainframe, text='Four', variable=players, value=4).grid(column=1, row=5, sticky=W)
-    five = ttk.Radiobutton(mainframe, text='Five', variable=players, value=5).grid(column=1, row=6, sticky=W)
-    choice = ttk.Button(mainframe, text='Ready!', command=lambda : generate_game(players.get())).grid(column=2, row=7, sticky=N)
-    cancel = ttk.Button(mainframe, text='Cancel Game', command=exit).grid(column=2, row=8, sticky=N)
-
-    root.mainloop()
+def run_game():
+    """Runs the full game - entrypoint of the script"""
+    G = generate_route_graph("route_list.csv")
+    window = create_game_window(G)
+    window.mainloop()
 
 
 if __name__ == "__main__":
-    main()
+    run_game()
 
 
 
