@@ -2,57 +2,74 @@ import networkx as nx
 import pandas as pd
 import random
 import tkinter as tk
+import math
 
 from networkx.classes.function import path_weight
 from networkx.algorithms.shortest_paths.generic import shortest_path
 from tkinter import ttk
 
+class TTRGame():
 
-def generate_route_graph(route_csv):
-    """Generates a graph network given a csv of city data"""
-    routes_df = pd.read_csv(route_csv)
-    routes_list = list(zip(list(routes_df.City1), list(routes_df.City2), list(routes_df.Distance)))
+    def __init__(self, num_players):
+        self.players = num_players
+        self.graph = self.generate_route_graph()
+        self.deck = self.generate_deck()
+        self.hands = dict()
+        for i in range(num_players):
+            self.hands[i] = []
+        self.candidates = []
 
-    G = nx.Graph()
-    G.add_weighted_edges_from(routes_list)
+    def update_num_players(self, new_players):
+        self.players = new_players
+        for i in range(self.players):
+            self.hands[i] = []
 
-    return G
+    def generate_route_graph(self):
+        """Generates a graph network given a csv of city data"""
+        routes_df = pd.read_csv("route_list.csv")
+        routes_list = list(zip(list(routes_df.City1), list(routes_df.City2), list(routes_df.Distance)))
 
-def generate_deck(G, deck_size=30):
-    """Generates a deck of valid routes from the pool of cities."""
-    city_list = list(G.nodes)
-    deck = []
-    
-    while len(deck) < deck_size:
-        path = []
-        while len(path) < 3:
-            end_cities = random.sample(city_list, 2)
-            path = shortest_path(G, end_cities[0], end_cities[1])
-        path_cost = path_weight(G, path, "weight")
+        G = nx.Graph()
+        G.add_weighted_edges_from(routes_list)
 
-        route_title = end_cities[0] + '-' + end_cities[1]
-        card = (route_title, path_cost)
+        return G
 
-        route_title_rev = end_cities[1] + '-' + end_cities[0]
-        rev_card = (route_title_rev, path_cost)
+    def generate_deck(self, deck_size=30):
+        """Generates a deck of valid routes from the pool of cities."""
+        city_list = list(self.graph.nodes)
+        deck = []
 
-        if (card not in deck) and (rev_card not in deck):
-            deck.append(card)
-        
-    return deck
+        while len(deck) < deck_size:
+            path = []
+            while len(path) < 3:
+                end_cities = random.sample(city_list, 2)
+                path = shortest_path(self.graph, end_cities[0], end_cities[1])
+            path_cost = path_weight(self.graph, path, "weight")
 
-def generate_game(G, num_players=2):
-    """Generates an empty game state for a new game"""
-    deck = generate_deck(G)
-    player_cards = {"deck": deck}
+            route_title = end_cities[0] + '-' + end_cities[1]
+            card = (route_title, path_cost)
 
-    for x in range(num_players):
-        player_cards[x] = []
+            route_title_rev = end_cities[1] + '-' + end_cities[0]
+            rev_card = (route_title_rev, path_cost)
 
-    return (player_cards, deck)
-    
+            if (card not in deck) and (rev_card not in deck):
+                deck.append(card)
 
-def create_game_window(G):
+        print(deck)
+        return deck
+
+    def deal_cards(self):
+        for i in range(3):
+            self.candidates.append(self.deck.pop(0))
+
+    def choose_cards(self, player_num, cards_chosen):
+        rev = reversed(cards_chosen)
+        for x in rev:
+            self.hands[player_num].append(self.candidates.pop(x))
+        for y in self.candidates:
+            self.deck.append(y)
+
+def create_game_window(game):
     """Creates a window interface to play the game in"""
     root = tk.Tk()
     root.title("Ticket to Ride: Ultimate Edition")
@@ -68,11 +85,41 @@ def create_game_window(G):
     ttk.Radiobutton(mainframe, text='Three', variable=players, value=3).grid(column=1, row=4, sticky='w')
     ttk.Radiobutton(mainframe, text='Four', variable=players, value=4).grid(column=1, row=5, sticky='w')
     ttk.Radiobutton(mainframe, text='Five', variable=players, value=5).grid(column=1, row=6, sticky='w')
-    ttk.Button(mainframe, text='Ready!', command=lambda : generate_game(G, players.get())).grid(column=2, row=7, sticky='n')
+    ttk.Button(mainframe, text='Ready!',
+               command=lambda : [game.update_num_players(players.get()), cards_windows(game)]).grid(column=2,
+                                                                                                    row=7, sticky='n')
     ttk.Button(mainframe, text='Cancel Game', command=exit).grid(column=2, row=8, sticky='n')
 
     return root
 
+def cards_windows(game):
+    root = tk.Toplevel()
+    root.title("Ticket to Ride: Ultimate Edition")
+    mainframe = ttk.Frame(root, padding="6 6 12 12")
+    mainframe.grid(column=0, row=0, sticky='nsew')
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+
+    ttk.Label(mainframe, text='Deal Cards').grid(column=1, row=1, sticky='w')
+    ttk.Label(mainframe, text='Which player should get cards?').grid(column=1, row=2, sticky='n')
+    players = tk.StringVar()
+    firstdeal = tk.BooleanVar()
+    ttk.Entry(mainframe, width=5, textvariable=players).grid(column=1, row=3, sticky='n')
+    ttk.Label(mainframe, text='First 3 Cards?').grid(column=1, row=4, sticky='n')
+    ttk.Radiobutton(mainframe, text='Yes', variable=firstdeal, value=True).grid(column=1, row=6, sticky='w')
+    ttk.Radiobutton(mainframe, text='No', variable=firstdeal, value=False).grid(column=1, row=7, sticky='w')
+    if firstdeal.get():
+        minimum = 2
+    else:
+        minimum = 1
+    ttk.Button(mainframe, text='Deal Cards',
+               command=lambda : [game.deal_cards(int(round(float(players.get()), 0)), minimum),
+                                 display_three(game)]).grid(column=2, row=7, sticky='n')
+
+    return root
+
+def display_three():
+    pass
 
 def deal_to_player(player, game_state, initial_deal=True):
     pass
@@ -84,8 +131,8 @@ def end_of_game():
 
 def run_game():
     """Runs the full game - entrypoint of the script"""
-    G = generate_route_graph("route_list.csv")
-    window = create_game_window(G)
+    game = TTRGame(num_players=2)
+    window = create_game_window(game)
     window.mainloop()
 
 
