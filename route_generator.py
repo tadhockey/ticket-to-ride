@@ -62,12 +62,17 @@ class TTRGame():
         for i in range(3):
             self.candidates.append(self.deck.pop(0))
 
+    def show_dealt_cards(self):
+        return self.candidates
+
     def choose_cards(self, player_num, cards_chosen):
-        rev = reversed(cards_chosen)
-        for x in rev:
-            self.hands[player_num].append(self.candidates.pop(x))
-        for y in self.candidates:
-            self.deck.append(y)
+        for x in range(3):
+            if cards_chosen[x]:
+                self.hands[player_num].append(self.candidates[x])
+                print(self.hands[player_num])
+            else:
+                self.deck.append(self.candidates[x])
+        self.candidates = []
 
 def create_game_window(game):
     """Creates a window interface to play the game in"""
@@ -108,18 +113,34 @@ def cards_windows(game):
     ttk.Label(mainframe, text='First 3 Cards?').grid(column=1, row=4, sticky='n')
     ttk.Radiobutton(mainframe, text='Yes', variable=firstdeal, value=True).grid(column=1, row=6, sticky='w')
     ttk.Radiobutton(mainframe, text='No', variable=firstdeal, value=False).grid(column=1, row=7, sticky='w')
-    if firstdeal.get():
-        minimum = 2
-    else:
-        minimum = 1
+    #if firstdeal.get():
+    #    minimum = 2
+    #else:
+    #    minimum = 1
     ttk.Button(mainframe, text='Deal Cards',
-               command=lambda : [game.deal_cards(int(round(float(players.get()), 0)), minimum),
-                                 display_three(game)]).grid(column=2, row=7, sticky='n')
+               command=lambda : [game.deal_cards(),
+                                 display_three(game, firstdeal.get(), players.get())]).grid(column=2, row=7, sticky='n')
 
     return root
 
-def display_three():
-    pass
+def display_three(game, first_deal, player_num):
+    root = tk.Toplevel()
+    root.title("Ticket to Ride: Ultimate Edition")
+    mainframe = ttk.Frame(root, padding="6 6 12 12")
+    mainframe.grid(column=0, row=0, sticky='nsew')
+    root.columnconfigure(0, weight=1)
+    root.rowconfigure(0, weight=1)
+    player = int(player_num)
+    ttk.Label(mainframe, text='3 Cards - Player ' + player_num).grid(column=1, row=1, sticky='w')
+    card1 = tk.BooleanVar()
+    card2 = tk.BooleanVar()
+    card3 = tk.BooleanVar()
+    options = game.show_dealt_cards()
+    ttk.Checkbutton(mainframe, text=options[0], variable=card1).grid(column=1, row=6, sticky='w')
+    ttk.Checkbutton(mainframe, text=options[1], variable=card2).grid(column=1, row=7, sticky='w')
+    ttk.Checkbutton(mainframe, text=options[2], variable=card3).grid(column=1, row=8, sticky='w')
+    ttk.Button(mainframe, text='Confirm Selections',
+               command=lambda: [game.choose_cards(player - 1, [card1.get(), card2.get(), card3.get()]), root.destroy()]).grid(column=2, row=7, sticky='n')
 
 def deal_to_player(player, game_state, initial_deal=True):
     pass
