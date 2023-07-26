@@ -82,18 +82,37 @@ def create_game_window(game):
     mainframe.grid(column=0, row=0, sticky='nsew')
     root.columnconfigure(0, weight=1)
     root.rowconfigure(0, weight=1)
+    root.option_add('*tearOff', False)
 
+    style1 = ttk.Style()
+    style1.configure('Ready.TButton', background='black', foreground='green')
+    style2 = ttk.Style()
+    style2.configure('Exit.TButton', background='black', foreground='red')
+
+    menubar = tk.Menu(root)
+    root['menu'] = menubar
+    menu_game = tk.Menu(menubar)
+    menubar.add_cascade(menu=menu_game, label='New Game')
+    menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(players.get()), cards_windows(game)])
+    menu_game.add_command(label='3 Players')
+    menu_game.add_command(label='4 Players')
+    menu_game.add_command(label='5 Players')
+
+    '''
     ttk.Label(mainframe, text='Create a New Game').grid(column=1, row=1, sticky='w')
     ttk.Label(mainframe, text='How many players are playing Ticket to Ride?').grid(column=1, row=2, sticky='n')
+    '''
     players = tk.IntVar()
+    '''
     ttk.Radiobutton(mainframe, text='Two', variable=players, value=2).grid(column=1, row=3, sticky='w')
     ttk.Radiobutton(mainframe, text='Three', variable=players, value=3).grid(column=1, row=4, sticky='w')
     ttk.Radiobutton(mainframe, text='Four', variable=players, value=4).grid(column=1, row=5, sticky='w')
     ttk.Radiobutton(mainframe, text='Five', variable=players, value=5).grid(column=1, row=6, sticky='w')
-    ttk.Button(mainframe, text='Ready!',
+    '''
+    ttk.Button(mainframe, text='Ready!', style='Ready.TButton',
                command=lambda : [game.update_num_players(players.get()), cards_windows(game)]).grid(column=2,
                                                                                                     row=7, sticky='n')
-    ttk.Button(mainframe, text='Cancel Game', command=exit).grid(column=2, row=8, sticky='n')
+    ttk.Button(mainframe, text='Cancel Game', style='Exit.TButton', command=exit).grid(column=2, row=8, sticky='n')
 
     return root
 
