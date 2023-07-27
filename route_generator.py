@@ -10,10 +10,10 @@ from tkinter import ttk
 
 class TTRGame():
 
-    def __init__(self, num_players):
+    def __init__(self, num_players=1):
         self.players = num_players
         self.graph = self.generate_route_graph()
-        self.deck = self.generate_deck()
+        self.short_deck, self.long_deck = self.generate_deck()
         self.hands = dict()
         for i in range(num_players):
             self.hands[i] = []
@@ -37,11 +37,12 @@ class TTRGame():
     def generate_deck(self, deck_size=30):
         """Generates a deck of valid routes from the pool of cities."""
         city_list = list(self.graph.nodes)
-        deck = []
+        short_deck = []
+        long_deck = []
 
-        while len(deck) < deck_size:
+        while len(short_deck) < deck_size:
             path = []
-            while len(path) < 3:
+            while len(path) < 3 or len(path) > 14:
                 end_cities = random.sample(city_list, 2)
                 path = shortest_path(self.graph, end_cities[0], end_cities[1])
             path_cost = path_weight(self.graph, path, "weight")
@@ -52,15 +53,34 @@ class TTRGame():
             route_title_rev = end_cities[1] + '-' + end_cities[0]
             rev_card = (route_title_rev, path_cost)
 
-            if (card not in deck) and (rev_card not in deck):
-                deck.append(card)
+            if (card not in short_deck) and (rev_card not in short_deck):
+                short_deck.append(card)
 
-        print(deck)
-        return deck
+        while len(long_deck) < 10:
+            path = []
+            while len(path) < 15 or len(path) > 25:
+                end_cities = random.sample(city_list, 2)
+                path = shortest_path(self.graph, end_cities[0], end_cities[1])
+            path_cost = path_weight(self.graph, path, "weight")
+
+            route_title = end_cities[0] + '-' + end_cities[1]
+            card = (route_title, path_cost)
+
+            route_title_rev = end_cities[1] + '-' + end_cities[0]
+            rev_card = (route_title_rev, path_cost)
+
+            if (card not in long_deck) and (rev_card not in long_deck):
+                long_deck.append(card)
+
+        print('short deck')
+        print(short_deck)
+        print('long deck')
+        print(long_deck)
+        return short_deck, long_deck
 
     def deal_cards(self):
         for i in range(3):
-            self.candidates.append(self.deck.pop(0))
+            self.candidates.append(self.short_deck.pop(0))
 
     def show_dealt_cards(self):
         return self.candidates
@@ -71,17 +91,19 @@ class TTRGame():
                 self.hands[player_num].append(self.candidates[x])
                 print(self.hands[player_num])
             else:
-                self.deck.append(self.candidates[x])
+                self.short_deck.append(self.candidates[x])
         self.candidates = []
 
 def create_game_window(game):
     """Creates a window interface to play the game in"""
     root = tk.Tk()
     root.title("Ticket to Ride: Ultimate Edition")
-    mainframe = ttk.Frame(root, padding="6 6 12 12")
-    mainframe.grid(column=0, row=0, sticky='nsew')
+    #mainframe = ttk.Frame(root, padding="60 60 60 60")
+    #mainframe.grid(column=0, row=0, sticky='nsew')
     root.columnconfigure(0, weight=1)
     root.rowconfigure(0, weight=1)
+    root.rowconfigure(1, weight=1)
+    root.rowconfigure(2, weight=1)
     root.option_add('*tearOff', False)
 
     style1 = ttk.Style()
@@ -93,27 +115,32 @@ def create_game_window(game):
     root['menu'] = menubar
     menu_game = tk.Menu(menubar)
     menubar.add_cascade(menu=menu_game, label='New Game')
-    menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(players.get()), cards_windows(game)])
-    menu_game.add_command(label='3 Players')
-    menu_game.add_command(label='4 Players')
-    menu_game.add_command(label='5 Players')
+    menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(2), cards_windows(game)])
+    menu_game.add_command(label='3 Players', command=lambda : [game.update_num_players(3), cards_windows(game)])
+    menu_game.add_command(label='4 Players', command=lambda : [game.update_num_players(4), cards_windows(game)])
+    menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), cards_windows(game)])
+
+    root.geometry('900x600+40+40')
+    root.resizable(False,False)
+    ttk.Label(root, text='Create a New Game to Begin!').grid(column=0, row=0, sticky='nsew')
+
 
     '''
     ttk.Label(mainframe, text='Create a New Game').grid(column=1, row=1, sticky='w')
     ttk.Label(mainframe, text='How many players are playing Ticket to Ride?').grid(column=1, row=2, sticky='n')
-    '''
+    
     players = tk.IntVar()
-    '''
+    
     ttk.Radiobutton(mainframe, text='Two', variable=players, value=2).grid(column=1, row=3, sticky='w')
     ttk.Radiobutton(mainframe, text='Three', variable=players, value=3).grid(column=1, row=4, sticky='w')
     ttk.Radiobutton(mainframe, text='Four', variable=players, value=4).grid(column=1, row=5, sticky='w')
     ttk.Radiobutton(mainframe, text='Five', variable=players, value=5).grid(column=1, row=6, sticky='w')
-    '''
+    
     ttk.Button(mainframe, text='Ready!', style='Ready.TButton',
                command=lambda : [game.update_num_players(players.get()), cards_windows(game)]).grid(column=2,
                                                                                                     row=7, sticky='n')
     ttk.Button(mainframe, text='Cancel Game', style='Exit.TButton', command=exit).grid(column=2, row=8, sticky='n')
-
+    '''
     return root
 
 def cards_windows(game):
@@ -171,7 +198,7 @@ def end_of_game():
 
 def run_game():
     """Runs the full game - entrypoint of the script"""
-    game = TTRGame(num_players=2)
+    game = TTRGame()
     window = create_game_window(game)
     window.mainloop()
 
