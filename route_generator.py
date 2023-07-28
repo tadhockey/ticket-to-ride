@@ -42,10 +42,11 @@ class TTRGame():
 
         while len(short_deck) < deck_size:
             path = []
-            while len(path) < 3 or len(path) > 14:
+            path_cost = 0
+            while path_cost < 4 or path_cost > 14 or len(path) < 3:
                 end_cities = random.sample(city_list, 2)
                 path = shortest_path(self.graph, end_cities[0], end_cities[1])
-            path_cost = path_weight(self.graph, path, "weight")
+                path_cost = path_weight(self.graph, path, "weight")
 
             route_title = end_cities[0] + '-' + end_cities[1]
             card = (route_title, path_cost)
@@ -58,10 +59,13 @@ class TTRGame():
 
         while len(long_deck) < 10:
             path = []
-            while len(path) < 15 or len(path) > 25:
+            path_cost = 0
+            while path_cost < 15 or path_cost > 25:
                 end_cities = random.sample(city_list, 2)
+                #print(end_cities)
                 path = shortest_path(self.graph, end_cities[0], end_cities[1])
-            path_cost = path_weight(self.graph, path, "weight")
+                #print(path)
+                path_cost = path_weight(self.graph, path, "weight")
 
             route_title = end_cities[0] + '-' + end_cities[1]
             card = (route_title, path_cost)
@@ -70,6 +74,7 @@ class TTRGame():
             rev_card = (route_title_rev, path_cost)
 
             if (card not in long_deck) and (rev_card not in long_deck):
+                #print(len(long_deck))
                 long_deck.append(card)
 
         print('short deck')
@@ -114,15 +119,23 @@ def create_game_window(game):
     menubar = tk.Menu(root)
     root['menu'] = menubar
     menu_game = tk.Menu(menubar)
-    menubar.add_cascade(menu=menu_game, label='New Game')
-    menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(2), cards_windows(game)])
-    menu_game.add_command(label='3 Players', command=lambda : [game.update_num_players(3), cards_windows(game)])
-    menu_game.add_command(label='4 Players', command=lambda : [game.update_num_players(4), cards_windows(game)])
-    menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), cards_windows(game)])
 
     root.geometry('900x600+40+40')
     root.resizable(False,False)
-    ttk.Label(root, text='Create a New Game to Begin!').grid(column=0, row=0, sticky='nsew')
+    start_label = ttk.Label(root, text='Create a New Game to Begin!')
+    start_label.grid(column=0, row=0, sticky='nsew')
+
+    menubar.add_cascade(menu=menu_game, label='New Game')
+    menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(2), start_label.destroy(), game_window(game, root)])
+    menu_game.add_command(label='3 Players', command=lambda : [game.update_num_players(3), start_label.destroy(), game_window(game, root)])
+    menu_game.add_command(label='4 Players', command=lambda : [game.update_num_players(4), start_label.destroy(), game_window(game, root)])
+    menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), start_label.destroy(), game_window(game, root)])
+    # menu_game.add_command(label='2 Players', command=lambda : [game.update_num_players(2), cards_windows(game)])
+    # menu_game.add_command(label='3 Players', command=lambda : [game.update_num_players(3), cards_windows(game)])
+    # menu_game.add_command(label='4 Players', command=lambda : [game.update_num_players(4), cards_windows(game)])
+    # menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), cards_windows(game)])
+
+
 
 
     '''
@@ -142,6 +155,25 @@ def create_game_window(game):
     ttk.Button(mainframe, text='Cancel Game', style='Exit.TButton', command=exit).grid(column=2, row=8, sticky='n')
     '''
     return root
+
+def game_window(game, root):
+    ttk.Label(root, text='Player 1:').grid(column=0, row=3, sticky='nsew')
+
+    game.deal_cards()
+    options = game.show_dealt_cards()
+    card1 = tk.BooleanVar()
+    card2 = tk.BooleanVar()
+    card3 = tk.BooleanVar()
+
+    check1 = ttk.Checkbutton(root, text=options[0], variable=card1)
+    check2 = ttk.Checkbutton(root, text=options[1], variable=card2)
+    check3 = ttk.Checkbutton(root, text=options[2], variable=card3)
+    check1.grid(column=1, row=6, sticky='w')
+    check2.grid(column=1, row=7, sticky='w')
+    check3.grid(column=1, row=8, sticky='w')
+    confirm = ttk.Button(root, text='Confirm Selections',
+               command=lambda: [game.choose_cards(1, [card1.get(), card2.get(), card3.get()]), root.destroy()])
+    confirm.grid(column=2, row=7, sticky='n')
 
 def cards_windows(game):
     root = tk.Toplevel()
