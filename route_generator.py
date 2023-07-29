@@ -87,17 +87,27 @@ class TTRGame():
         for i in range(3):
             self.candidates.append(self.short_deck.pop(0))
 
+    def deal_long_cards(self):
+        for i in range(2):
+            self.candidates.append(self.long_deck.pop(0))
+
     def show_dealt_cards(self):
         return self.candidates
 
-    def choose_cards(self, player_num, cards_chosen):
-        for x in range(3):
+    def choose_cards(self, player_num, cards_chosen, long=False):
+        for x in range(len(cards_chosen)):
             if cards_chosen[x]:
                 self.hands[player_num].append(self.candidates[x])
                 print(self.hands[player_num])
             else:
-                self.short_deck.append(self.candidates[x])
+                if long:
+                    self.long_deck.append(self.candidates[x])
+                else:
+                    self.short_deck.append(self.candidates[x])
         self.candidates = []
+
+    def num_of_players(self):
+        return self.players
 
 def create_game_window(game):
     """Creates a window interface to play the game in"""
@@ -105,11 +115,11 @@ def create_game_window(game):
     root.title("Ticket to Ride: Ultimate Edition")
     #mainframe = ttk.Frame(root, padding="60 60 60 60")
     #mainframe.grid(column=0, row=0, sticky='nsew')
-    root.columnconfigure(0, weight=1)
-    root.rowconfigure(0, weight=1)
-    root.rowconfigure(1, weight=1)
-    root.rowconfigure(2, weight=1)
-    root.option_add('*tearOff', False)
+    #root.columnconfigure(0, weight=1)
+    #root.rowconfigure(0, weight=1)
+    #root.rowconfigure(1, weight=1)
+    #root.rowconfigure(2, weight=1)
+    #root.option_add('*tearOff', False)
 
     style1 = ttk.Style()
     style1.configure('Ready.TButton', background='black', foreground='green')
@@ -135,9 +145,6 @@ def create_game_window(game):
     # menu_game.add_command(label='4 Players', command=lambda : [game.update_num_players(4), cards_windows(game)])
     # menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), cards_windows(game)])
 
-
-
-
     '''
     ttk.Label(mainframe, text='Create a New Game').grid(column=1, row=1, sticky='w')
     ttk.Label(mainframe, text='How many players are playing Ticket to Ride?').grid(column=1, row=2, sticky='n')
@@ -156,25 +163,76 @@ def create_game_window(game):
     '''
     return root
 
+#TODO: exclusivity of radio button choices
+#TODO: block player from choosing fewer than minimum required cards
+#TODO: handle edge case where deck is empty or has fewer than three cards to deal
 def game_window(game, root):
-    ttk.Label(root, text='Player 1:').grid(column=0, row=3, sticky='nsew')
+    for i in range(game.num_of_players()):
 
-    game.deal_cards()
-    options = game.show_dealt_cards()
-    card1 = tk.BooleanVar()
-    card2 = tk.BooleanVar()
-    card3 = tk.BooleanVar()
+        text = 'Player ' + str(i + 1) + ', please prepare to choose cards'
+        player_label = ttk.Label(root, text=text)
+        player_label.grid(column=0, row=1, sticky='nsew')
 
-    check1 = ttk.Checkbutton(root, text=options[0], variable=card1)
-    check2 = ttk.Checkbutton(root, text=options[1], variable=card2)
-    check3 = ttk.Checkbutton(root, text=options[2], variable=card3)
-    check1.grid(column=1, row=6, sticky='w')
-    check2.grid(column=1, row=7, sticky='w')
-    check3.grid(column=1, row=8, sticky='w')
-    confirm = ttk.Button(root, text='Confirm Selections',
-               command=lambda: [game.choose_cards(1, [card1.get(), card2.get(), card3.get()]), root.destroy()])
-    confirm.grid(column=2, row=7, sticky='n')
+        click = tk.IntVar()
+        confirm = ttk.Button(root, text='Ready!',
+                             command=lambda: [player_label.destroy(),
+                                 click.set(click.get() + 1), confirm.destroy()])
+        confirm.grid(column=2, row=7, sticky='n')
+        confirm.wait_variable(click)
 
+        #Long Deal
+        text = 'Player ' + str(i + 1) + ', choose your long route card:'
+        player_label = ttk.Label(root, text=text)
+        player_label.grid(column=0, row=1, sticky='nsew')
+
+        game.deal_long_cards()
+        options = game.show_dealt_cards()
+        long_card_choice1 = tk.BooleanVar()
+        long_card_choice2 = tk.BooleanVar()
+
+        long_opt_1 = ttk.Radiobutton(root, text=options[0], variable=long_card_choice1)
+        long_opt_2 = ttk.Radiobutton(root, text=options[1], variable=long_card_choice2)
+        long_opt_1.grid(column=1, row=3, sticky='w')
+        long_opt_2.grid(column=1, row=4, sticky='w')
+
+        click = tk.IntVar()
+        confirm = ttk.Button(root, text='Confirm Selection',
+                             command=lambda: [game.choose_cards(1, [long_card_choice1.get(), long_card_choice2.get()], True),
+                                              player_label.destroy(),
+                                              long_opt_1.destroy(), long_opt_2.destroy(),
+                                              click.set(click.get() + 1), confirm.destroy()])
+        confirm.grid(column=2, row=7, sticky='n')
+        confirm.wait_variable(click)
+
+        #Short Deal
+        text = 'Player ' + str(i + 1) + ', choose your short route cards:'
+        player_label = ttk.Label(root, text=text)
+        player_label.grid(column=0, row=1, sticky='nsew')
+
+        game.deal_cards()
+        options = game.show_dealt_cards()
+        card1 = tk.BooleanVar()
+        card2 = tk.BooleanVar()
+        card3 = tk.BooleanVar()
+
+        check1 = ttk.Checkbutton(root, text=options[0], variable=card1)
+        check2 = ttk.Checkbutton(root, text=options[1], variable=card2)
+        check3 = ttk.Checkbutton(root, text=options[2], variable=card3)
+        check1.grid(column=0, row=2, sticky='w')
+        check2.grid(column=0, row=3, sticky='w')
+        check3.grid(column=0, row=4, sticky='w')
+        click = tk.IntVar()
+        confirm = ttk.Button(root, text='Confirm Selections',
+                command=lambda: [game.choose_cards(1, [card1.get(), card2.get(), card3.get()]), player_label.destroy(),
+                                 check1.destroy(), check2.destroy(), check3.destroy(), click.set(click.get() + 1), confirm.destroy()])
+        confirm.grid(column=2, row=7, sticky='n')
+        confirm.wait_variable(click)
+
+    maintain_game(game, root)
+
+'''
+deprecated from earlier revisions
+'''
 def cards_windows(game):
     root = tk.Toplevel()
     root.title("Ticket to Ride: Ultimate Edition")
@@ -218,13 +276,89 @@ def display_three(game, first_deal, player_num):
     ttk.Checkbutton(mainframe, text=options[1], variable=card2).grid(column=1, row=7, sticky='w')
     ttk.Checkbutton(mainframe, text=options[2], variable=card3).grid(column=1, row=8, sticky='w')
     ttk.Button(mainframe, text='Confirm Selections',
-               command=lambda: [game.choose_cards(player - 1, [card1.get(), card2.get(), card3.get()]), root.destroy()]).grid(column=2, row=7, sticky='n')
+               command=lambda: [game.choose_cards(player - 1, [card1.get(), card2.get(), card3.get()]),
+                                root.destroy()]).grid(column=2, row=7, sticky='n')
 
-def deal_to_player(player, game_state, initial_deal=True):
-    pass
+def maintain_game(game, root):
+    click = tk.IntVar()
+    header = ttk.Label(root, text='Choose Next Action')
+    header.grid(column=0, row=0)
+    deal_card_button = ttk.Button(root, text='Deal More Cards to Player',
+                                  command=lambda: [header.destroy(), click.set(click.get() + 1),
+                                                    end_game_button.destroy(),
+                                                   deal_card_button.destroy(),
+                                                   additional_cards(game, root)])
+    deal_card_button.grid(column=0, row=1, sticky='n')
+    end_game_button = ttk.Button(root, text='Initiate Game End Procedure',
+                                 command=lambda: [header.destroy(), end_of_game(game, root), click.set(click.get() + 1),
+                                                    deal_card_button.destroy(), end_game_button.destroy()])
+    end_game_button.grid(column=0, row=2, sticky='n')
+    deal_card_button.wait_variable(click)
+    end_game_button.wait_variable(click)
 
+def rb_destroy(players, rb_dict):
+    for i in range(players):
+        rb_dict[i].destroy()
+    print('I got here!')
 
-def end_of_game():
+def additional_cards(game, root):
+    text = 'Choose a player to deal cards to:'
+    player_label = ttk.Label(root, text=text)
+    player_label.grid(column=0, row=1, sticky='nsew')
+
+    players = tk.IntVar()
+    player_numbers = ["1", "2", "3", "4", "5"]
+    rb = dict()
+    click = tk.IntVar()
+    for i in range(game.num_of_players()):
+        rb[i] = ttk.Radiobutton(root, text=player_numbers[i], variable=players, value=i+1)
+        rb[i].grid(column=0, row=i+2, sticky='w')
+    confirm = ttk.Button(root, text='Confirm Selection',
+                                  command=lambda: [player_label.destroy(),
+                                                   rb_destroy(game.num_of_players(), rb),
+                                                   click.set(click.get() + 1),
+                                                   confirm.destroy()])
+    confirm.grid(column=2, row=7, sticky='n')
+    confirm.wait_variable(click)
+
+    #prepare statement
+    text = 'Player ' + str(players.get()) + ', please prepare to choose cards'
+    player_label = ttk.Label(root, text=text)
+    player_label.grid(column=0, row=1, sticky='nsew')
+
+    click = tk.IntVar()
+    confirm = ttk.Button(root, text='Ready!',
+                         command=lambda: [player_label.destroy(),
+                                          click.set(click.get() + 1), confirm.destroy()])
+    confirm.grid(column=2, row=7, sticky='n')
+    confirm.wait_variable(click)
+
+    #choose new cards
+    text = 'Player ' + str(players.get()) + ', choose your short route cards:'
+    player_label = ttk.Label(root, text=text)
+    player_label.grid(column=0, row=1, sticky='nsew')
+
+    game.deal_cards()
+    options = game.show_dealt_cards()
+    card1 = tk.BooleanVar()
+    card2 = tk.BooleanVar()
+    card3 = tk.BooleanVar()
+
+    check1 = ttk.Checkbutton(root, text=options[0], variable=card1)
+    check2 = ttk.Checkbutton(root, text=options[1], variable=card2)
+    check3 = ttk.Checkbutton(root, text=options[2], variable=card3)
+    check1.grid(column=0, row=2, sticky='w')
+    check2.grid(column=0, row=3, sticky='w')
+    check3.grid(column=0, row=4, sticky='w')
+    click = tk.IntVar()
+    confirm = ttk.Button(root, text='Confirm Selections',
+            command=lambda: [game.choose_cards(1, [card1.get(), card2.get(), card3.get()]), player_label.destroy(),
+                             check1.destroy(), check2.destroy(), check3.destroy(),
+                             click.set(click.get() + 1), confirm.destroy(), maintain_game(game, root)])
+    confirm.grid(column=2, row=7, sticky='n')
+    confirm.wait_variable(click)
+
+def end_of_game(game, root):
     pass
 
 
