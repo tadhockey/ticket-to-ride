@@ -8,6 +8,10 @@ from networkx.classes.function import path_weight
 from networkx.algorithms.shortest_paths.generic import shortest_path
 from tkinter import ttk
 
+#TODO: handle edge case where deck is empty or has fewer than three cards to deal
+#TODO: add player name capability
+#TODO: add visual with number of cards each player has in maintain game screen
+
 class TTRGame():
 
     def __init__(self, num_players=1):
@@ -78,10 +82,6 @@ class TTRGame():
                 #print(len(long_deck))
                 long_deck.append(card)
 
-        print('short deck')
-        print(short_deck)
-        print('long deck')
-        print(long_deck)
         return short_deck, long_deck
 
     def deal_cards(self):
@@ -173,8 +173,7 @@ def create_game_window(game):
     menu_game.add_command(label='5 Players', command=lambda : [game.update_num_players(5), start_label.destroy(), game_window(game, root)])
 
     return root
-    
-#TODO: handle edge case where deck is empty or has fewer than three cards to deal
+
 def game_window(game, root):
     """Initial dealing sequence"""
 
@@ -215,7 +214,7 @@ def game_window(game, root):
         confirm.wait_variable(click)
 
         #Short Deal
-        text = 'Player ' + str(i + 1) + ', choose your short route cards:'
+        text = 'Player ' + str(i + 1) + ', choose your short route cards. You must pick at least 2 cards.'
         player_label = ttk.Label(root, text=text)
         player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -254,21 +253,67 @@ def maintain_game(game, root):
     deal_card_button = ttk.Button(root, text='Deal More Cards to Player',
                                   command=lambda: [header.destroy(), click.set(click.get() + 1),
                                                     end_game_button.destroy(),
+                                                   show_one_player_cards_button.destroy(),
                                                    deal_card_button.destroy(),
                                                    additional_cards(game, root)])
     deal_card_button.grid(column=0, row=1, sticky='n')
+    show_one_player_cards_button = ttk.Button(root, text='Show One Player''s Cards',
+                                 command=lambda: [header.destroy(), click.set(click.get() + 1),
+                                                    deal_card_button.destroy(), end_game_button.destroy(),
+                                                  show_one_player_cards_button.destroy(), show_one_player_cards(game, root),]) #TODO: fix this shit
+    show_one_player_cards_button.grid(column=0, row=2, sticky='n')
     end_game_button = ttk.Button(root, text='Initiate Game End Procedure',
-                                 command=lambda: [header.destroy(), end_of_game(game, root), click.set(click.get() + 1),
-                                                    deal_card_button.destroy(), end_game_button.destroy()])
-    end_game_button.grid(column=0, row=2, sticky='n')
+                                 command=lambda: [header.destroy(), click.set(click.get() + 1),
+                                                    deal_card_button.destroy(), show_one_player_cards_button.destroy(),
+                                                  end_game_button.destroy(), end_of_game(game, root)])
+    end_game_button.grid(column=0, row=3, sticky='n')
     deal_card_button.wait_variable(click)
+    show_one_player_cards_button.wait_variable(click)
     end_game_button.wait_variable(click)
 
-def rb_destroy(players, rb_dict):
-    """Destroys radio buttons when radioButton objects are passed as array"""
-    for i in range(players):
-        rb_dict[i].destroy()
-    print('I got here!')
+def show_one_player_cards(game, root):
+    text = 'Choose which player''s cards to see:'
+    player_label = ttk.Label(root, text=text)
+    player_label.grid(column=0, row=1, sticky='nsew')
+
+    players = tk.IntVar()
+    player_numbers = ["1", "2", "3", "4", "5"]
+    rb = dict()
+    click = tk.IntVar()
+    for i in range(game.num_of_players()):
+        rb[i] = ttk.Radiobutton(root, text=player_numbers[i], variable=players, value=i)
+        rb[i].grid(column=0, row=i+2, sticky='w')
+    confirm = ttk.Button(root, text='Confirm Selection',
+                                  command=lambda: [player_label.destroy(),
+                                                    dict_destroy(game.num_of_players(), rb),
+                                                   click.set(click.get() + 1),
+                                                   confirm.destroy()])
+    confirm.grid(column=2, row=7, sticky='n')
+    confirm.wait_variable(click)
+
+    choice = players.get()
+    player_hand = game.show_hands(choice)
+    print(player_hand)
+    text = 'Player ' + str(choice + 1) + ' chosen cards'
+    player_label = ttk.Label(root, text=text)
+    player_label.grid(column=0, row=1, sticky='nsew')
+    labels = dict()
+    for j in range(len(player_hand)):
+        labels[j] = ttk.Label(root, text=player_hand[j])
+        labels[j].grid(column=0, row=2 + j, sticky='nsew')
+
+    return_button = ttk.Button(root, text='Return to Game',
+               command=lambda: [player_label.destroy(), dict_destroy(len(labels), labels), #TODO: fix this
+                                click.set(click.get() + 1), return_button.destroy(), maintain_game(game, root)])
+
+    return_button.grid(column=1, row=8, sticky='nsew')
+    return_button.wait_variable(click)
+
+
+def dict_destroy(r, diction):
+    """Destroys tkinter objects when passed as dictionary"""
+    for i in range(r):
+        diction[i].destroy()
 
 def additional_cards(game, root):
     """Process for dealing additional cards to players as required by game"""
@@ -286,7 +331,7 @@ def additional_cards(game, root):
         rb[i].grid(column=0, row=i+2, sticky='w')
     confirm = ttk.Button(root, text='Confirm Selection',
                                   command=lambda: [player_label.destroy(),
-                                                   rb_destroy(game.num_of_players(), rb),
+                                                   dict_destroy(game.num_of_players(), rb),
                                                    click.set(click.get() + 1),
                                                    confirm.destroy()])
     confirm.grid(column=2, row=7, sticky='n')
@@ -305,7 +350,7 @@ def additional_cards(game, root):
     confirm.wait_variable(click)
 
     #choose new cards
-    text = 'Player ' + str(players.get()) + ', choose your short route cards:'
+    text = 'Player ' + str(players.get()) + ', choose your short route cards. You must pick at least 1 card.'
     player_label = ttk.Label(root, text=text)
     player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -352,7 +397,6 @@ def run_game():
     game = TTRGame()
     window = create_game_window(game)
     window.mainloop()
-
 
 if __name__ == "__main__":
     run_game()
