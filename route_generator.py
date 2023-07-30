@@ -99,7 +99,7 @@ class TTRGame():
         for x in range(len(cards_chosen)):
             if cards_chosen[x]:
                 self.hands[player_num].append(self.candidates[x])
-                print(self.hands[player_num])
+                #print(self.hands[player_num])
             else:
                 if long:
                     self.long_deck.append(self.candidates[x])
@@ -293,7 +293,6 @@ def show_one_player_cards(game, root):
 
     choice = players.get()
     player_hand = game.show_hands(choice)
-    print(player_hand)
     text = 'Player ' + str(choice + 1) + ' chosen cards'
     player_label = ttk.Label(root, text=text)
     player_label.grid(column=0, row=1, sticky='nsew')
@@ -384,7 +383,6 @@ def end_of_game(game, root):
 
     for i in range(game.num_of_players()):
         player_hand = game.show_hands(i)
-        print(player_hand)
         text = 'Player ' + str(i + 1) + ' chosen cards'
         player_label = dict()
         player_label[i] = ttk.Label(root, text=text)
