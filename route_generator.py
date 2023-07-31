@@ -3,13 +3,13 @@ import pandas as pd
 import random
 import tkinter as tk
 import math
+import matplotlib
 
 from networkx.classes.function import path_weight
 from networkx.algorithms.shortest_paths.generic import shortest_path
 from tkinter import ttk
 
 #TODO: handle edge case where deck is empty or has fewer than three cards to deal
-#TODO: add player name capability
 #TODO: add visual with number of cards each player has in maintain game screen
 
 class TTRGame():
@@ -22,6 +22,7 @@ class TTRGame():
         for i in range(num_players):
             self.hands[i] = []
         self.candidates = []
+        self.player_names = []
 
     def update_num_players(self, new_players):
         """Confirms player count, for use at beginning of game before dealing"""
@@ -116,6 +117,12 @@ class TTRGame():
         else:
             return self.hands
 
+    def add_player_names(self, player):
+        self.player_names.append(player)
+
+    def get_player_name(self, player_num):
+        return self.player_names[player_num]
+
 def card_array(selection, num_options):
     """Chooses between cards when limited to single option via radiobutton or text box"""
     arr = []
@@ -183,15 +190,23 @@ def game_window(game, root):
         player_label = ttk.Label(root, text=text)
         player_label.grid(column=0, row=1, sticky='nsew')
 
+        name_request = 'Enter your name here:'
+        name_label = ttk.Label(root, text=name_request)
+        name_label.grid(column=0, row=2, sticky='nsew')
+
+        name = tk.StringVar()
+        name_bar = ttk.Entry(root, width=30, textvariable=name)
+        name_bar.grid(column=0, row=3, sticky='nsew')
+
         click = tk.IntVar()
         confirm = ttk.Button(root, text='Ready!',
-                             command=lambda: [player_label.destroy(),
-                                 click.set(click.get() + 1), confirm.destroy()])
+                             command=lambda: [player_label.destroy(), name_bar.destroy(), name_label.destroy(),
+                                 click.set(click.get() + 1), game.add_player_names(name.get()), confirm.destroy()])
         confirm.grid(column=2, row=7, sticky='n')
         confirm.wait_variable(click)
 
         #Long Deal
-        text = 'Player ' + str(i + 1) + ', choose your long route card:'
+        text = game.get_player_name(i) + ', choose your long route card:'
         player_label = ttk.Label(root, text=text)
         player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -214,7 +229,7 @@ def game_window(game, root):
         confirm.wait_variable(click)
 
         #Short Deal
-        text = 'Player ' + str(i + 1) + ', choose your short route cards. You must pick at least 2 cards.'
+        text = game.get_player_name(i) + ', choose your short route cards. You must pick at least 2 cards.'
         player_label = ttk.Label(root, text=text)
         player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -257,10 +272,10 @@ def maintain_game(game, root):
                                                    deal_card_button.destroy(),
                                                    additional_cards(game, root)])
     deal_card_button.grid(column=0, row=1, sticky='n')
-    show_one_player_cards_button = ttk.Button(root, text='Show One Player''s Cards',
+    show_one_player_cards_button = ttk.Button(root, text='View Hand',
                                  command=lambda: [header.destroy(), click.set(click.get() + 1),
                                                     deal_card_button.destroy(), end_game_button.destroy(),
-                                                  show_one_player_cards_button.destroy(), show_one_player_cards(game, root),]) #TODO: fix this shit
+                                                  show_one_player_cards_button.destroy(), show_one_player_cards(game, root),])
     show_one_player_cards_button.grid(column=0, row=2, sticky='n')
     end_game_button = ttk.Button(root, text='Initiate Game End Procedure',
                                  command=lambda: [header.destroy(), click.set(click.get() + 1),
@@ -277,11 +292,11 @@ def show_one_player_cards(game, root):
     player_label.grid(column=0, row=1, sticky='nsew')
 
     players = tk.IntVar()
-    player_numbers = ["1", "2", "3", "4", "5"]
+    #player_numbers = ["1", "2", "3", "4", "5"]
     rb = dict()
     click = tk.IntVar()
     for i in range(game.num_of_players()):
-        rb[i] = ttk.Radiobutton(root, text=player_numbers[i], variable=players, value=i)
+        rb[i] = ttk.Radiobutton(root, text=game.get_player_name(i), variable=players, value=i)
         rb[i].grid(column=0, row=i+2, sticky='w')
     confirm = ttk.Button(root, text='Confirm Selection',
                                   command=lambda: [player_label.destroy(),
@@ -293,7 +308,7 @@ def show_one_player_cards(game, root):
 
     choice = players.get()
     player_hand = game.show_hands(choice)
-    text = 'Player ' + str(choice + 1) + ' chosen cards'
+    text = game.get_player_name(choice) + '\' chosen cards'
     player_label = ttk.Label(root, text=text)
     player_label.grid(column=0, row=1, sticky='nsew')
     labels = dict()
@@ -322,11 +337,11 @@ def additional_cards(game, root):
     player_label.grid(column=0, row=1, sticky='nsew')
 
     players = tk.IntVar()
-    player_numbers = ["1", "2", "3", "4", "5"]
+    #player_numbers = ["1", "2", "3", "4", "5"]
     rb = dict()
     click = tk.IntVar()
     for i in range(game.num_of_players()):
-        rb[i] = ttk.Radiobutton(root, text=player_numbers[i], variable=players, value=i+1)
+        rb[i] = ttk.Radiobutton(root, text=game.get_player_name(i), variable=players, value=i)
         rb[i].grid(column=0, row=i+2, sticky='w')
     confirm = ttk.Button(root, text='Confirm Selection',
                                   command=lambda: [player_label.destroy(),
@@ -337,7 +352,7 @@ def additional_cards(game, root):
     confirm.wait_variable(click)
 
     #prepare statement
-    text = 'Player ' + str(players.get()) + ', please prepare to choose cards'
+    text = game.get_player_name(players.get()) + ', please prepare to choose cards'
     player_label = ttk.Label(root, text=text)
     player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -349,7 +364,7 @@ def additional_cards(game, root):
     confirm.wait_variable(click)
 
     #choose new cards
-    text = 'Player ' + str(players.get()) + ', choose your short route cards. You must pick at least 1 card.'
+    text = game.get_player_name(players.get()) + ', choose your short route cards. You must pick at least 1 card.'
     player_label = ttk.Label(root, text=text)
     player_label.grid(column=0, row=1, sticky='nsew')
 
@@ -361,7 +376,7 @@ def additional_cards(game, root):
     click = tk.IntVar()
 
     confirm = ttk.Button(root, text='Confirm Selections', state='disabled',
-            command=lambda: [game.choose_cards(1, [card1.get(), card2.get(), card3.get()]), player_label.destroy(),
+            command=lambda: [game.choose_cards(players.get(), [card1.get(), card2.get(), card3.get()]), player_label.destroy(),
                              check1.destroy(), check2.destroy(), check3.destroy(),
                              click.set(click.get() + 1), confirm.destroy(), maintain_game(game, root)])
     confirm.grid(column=2, row=7, sticky='n')
@@ -383,7 +398,7 @@ def end_of_game(game, root):
 
     for i in range(game.num_of_players()):
         player_hand = game.show_hands(i)
-        text = 'Player ' + str(i + 1) + ' chosen cards'
+        text = game.get_player_name(i) + '\'s chosen cards'
         player_label = dict()
         player_label[i] = ttk.Label(root, text=text)
         player_label[i].grid(column=i, row=1, sticky='nsew')
