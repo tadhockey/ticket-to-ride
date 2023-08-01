@@ -51,7 +51,7 @@ class TTRGame():
             path_cost = 0
             while path_cost < 4 or path_cost > 14 or len(path) < 3:
                 end_cities = random.sample(city_list, 2)
-                path = shortest_path(self.graph, end_cities[0], end_cities[1])
+                path = shortest_path(self.graph, end_cities[0], end_cities[1], "weight")
                 path_cost = path_weight(self.graph, path, "weight")
 
             route_title = end_cities[0] + '-' + end_cities[1]
@@ -69,7 +69,7 @@ class TTRGame():
             while path_cost < 15 or path_cost > 25:
                 end_cities = random.sample(city_list, 2)
                 #print(end_cities)
-                path = shortest_path(self.graph, end_cities[0], end_cities[1])
+                path = shortest_path(self.graph, end_cities[0], end_cities[1], "weight")
                 #print(path)
                 path_cost = path_weight(self.graph, path, "weight")
 
