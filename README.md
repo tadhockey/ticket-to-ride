@@ -11,7 +11,7 @@ Some other changes to the original rules:
 
 How to Run:
   1. Download all files from this directory.
-  2. This project is confirmed to work on Python 3.12+: it likely works on other python versions but is not guaranteed. Ensure the following packages are installed: numpy, pandas, tkinter, networkx, math, random, matplotlib
+  2. This project is confirmed to work on Python 3.10+: it likely works on other python versions but is not guaranteed. Ensure the packages listed in requirements.txt are installed in your environment.
   3. Run routegenerator.py. The game dialog box should open once started.
 
 Known Issues:
