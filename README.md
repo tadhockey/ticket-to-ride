@@ -14,8 +14,11 @@ How to Run:
   2. This project is confirmed to work on Python 3.10+: it likely works on other python versions but is not guaranteed. Ensure the packages listed in requirements.txt are installed in your environment.
   3. Run routegenerator.py. The game dialog box should open once started.
 
-Known Issues:
+Coming Bug Fixes:
   1. Game state is not saved. Do not close the game window: the game state will not be recoverable
   2. Some route cards appear with curly braces ("{"). This does not impact gameplay
   3. Back buttons are not present in the current game. Be careful where clicks are presented
   4. There is no way out of the End Game screen currently. Do not initiate end game until all players agree the game is otherwise over.
+
+Credits:
+- This application has been developed in collaboration with Kayla Gronewold, my fiance. She's an amazing person and an inspiration to me!
