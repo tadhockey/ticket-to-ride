@@ -169,7 +169,7 @@ def create_game_window(game):
     menu_game = tk.Menu(menubar)
 
     root.geometry('900x600+40+40')
-    root.resizable(False,False)
+    root.resizable(True,False)
     start_label = ttk.Label(root, text='Create a New Game to Begin!')
     start_label.grid(column=0, row=0, sticky='nsew')
 
@@ -265,23 +265,35 @@ def maintain_game(game, root):
     click = tk.IntVar()
     header = ttk.Label(root, text='Choose Next Action')
     header.grid(column=0, row=0)
+
+    #TODO: showing count correctly but needs to be destroyed when moving to another window
+
+    player_card_count = ttk.Label(root, text='Current Player Card Count ->')
+    player_card_count.grid(column=0, row=1)
+    hand_dict = dict()
+    for player in range(game.num_of_players()):
+        text = game.get_player_name(player) + ': ' + str(len(game.show_hands(player)))
+        hand_dict[player] = ttk.Label(root, text=text)
+        hand_dict[player].grid(column=player+1, row=1, sticky='n')
     deal_card_button = ttk.Button(root, text='Deal More Cards to Player',
                                   command=lambda: [header.destroy(), click.set(click.get() + 1),
+                                                   dict_destroy(len(hand_dict), hand_dict),
                                                     end_game_button.destroy(),
                                                    show_one_player_cards_button.destroy(),
                                                    deal_card_button.destroy(),
                                                    additional_cards(game, root)])
-    deal_card_button.grid(column=0, row=1, sticky='n')
+    deal_card_button.grid(column=0, row=2, sticky='n')
     show_one_player_cards_button = ttk.Button(root, text='View Hand',
-                                 command=lambda: [header.destroy(), click.set(click.get() + 1),
+                                 command=lambda: [header.destroy(), click.set(click.get() + 1), dict_destroy(len(hand_dict), hand_dict),
                                                     deal_card_button.destroy(), end_game_button.destroy(),
                                                   show_one_player_cards_button.destroy(), show_one_player_cards(game, root),])
-    show_one_player_cards_button.grid(column=0, row=2, sticky='n')
+    show_one_player_cards_button.grid(column=0, row=3, sticky='n')
     end_game_button = ttk.Button(root, text='Initiate Game End Procedure',
                                  command=lambda: [header.destroy(), click.set(click.get() + 1),
                                                     deal_card_button.destroy(), show_one_player_cards_button.destroy(),
-                                                  end_game_button.destroy(), end_of_game(game, root)])
-    end_game_button.grid(column=0, row=3, sticky='n')
+                                                  dict_destroy(len(hand_dict), hand_dict), end_game_button.destroy(),
+                                                  end_of_game(game, root)])
+    end_game_button.grid(column=0, row=4, sticky='n')
     deal_card_button.wait_variable(click)
     show_one_player_cards_button.wait_variable(click)
     end_game_button.wait_variable(click)
